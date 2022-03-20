@@ -56,7 +56,7 @@ public class Calculator {
 
                 if (!isOper(ch)) {  // 如果是数，直接入数栈
                     keepNum.append(ch);
-                    if (index == expression.length() - 1 || isOper(expression.charAt(index + 1)) || expression.charAt(index + 1) == ')') {
+                    if (index == expression.length() - 1 || isOper(expression.charAt(index + 1)) || isRightParenthesis(expression.charAt(index + 1))) {
                         numStack.push(Integer.parseInt(keepNum.toString()));
                         // 重要！！！清空 keepNum
                         keepNum = new StringBuilder();
