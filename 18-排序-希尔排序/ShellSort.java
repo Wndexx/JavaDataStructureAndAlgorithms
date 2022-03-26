@@ -50,7 +50,9 @@ public class ShellSort {
     @Test
     public void testShelSort0() {
         int[] arr = {8, 9, 1, 7, 2, 3, 5, 4, 6, 0};
-        shellSort0(arr);
+        // shellSort0(arr);
+        shellSort1(arr);
+        System.out.println(Arrays.toString(arr));
     }
 
     @Test
@@ -67,7 +69,8 @@ public class ShellSort {
         String beforeStr = pattern.format(before);
         System.out.println("排序前的时间是：" + beforeStr);
 
-        shellSort0(arr);
+        // shellSort0(arr);
+        shellSort1(arr);
 
         LocalDateTime after = LocalDateTime.now();
         String afterStr = pattern.format(after);
@@ -150,10 +153,26 @@ public class ShellSort {
     /**
      * 使用逐步推导的方式编写希尔排序
      * 移动法
+     * 对交换式的希尔排序进行优化 -> 移位法
      *
      * @param arr 原数组
      */
     public void shellSort1(int[] arr) {
+        // 增量 gap ，并逐步的缩小增量
+        for (int gap = arr.length / 2; gap > 0; gap /= 2) {
+            // 从第 gap 个元素，逐个对其所在的组进行直接插入排序
+            for (int i = gap; i < arr.length; i++) {
+                int j = i;
+                int temp = arr[i];
+                while (j - gap >= 0 && temp < arr[j - gap]) {
+                    // 移动
+                    arr[j] = arr[j - gap];
+                    j -= gap;
+                }
+                // 当退出 while ，就给 temp 找到了插入的位置
+                arr[j] = temp;
+            }
+        }
     }
 
     /**
