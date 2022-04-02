@@ -1,12 +1,194 @@
-package com.wndexx.tree;
+package com.wndexx.tree.threadedbinarytree;
+
+import java.util.Stack;
 
 /**
- * 二叉树
+ * 线索二叉树
  *
- * @author wndexx 2022-03-31 9:24
+ * @author wndexx 2022-04-01 15:58
  */
-public class BinaryTree {
+public class ThreadedBinaryTree {
+    /**
+     * 根结点
+     */
     public HeroNode root;
+
+    /**
+     * 指定结点的前驱结点的指针
+     * 在递归进行线索化时，pre 总是保留指定结点的前驱结点
+     */
+    public HeroNode pre;
+
+    /**
+     * 重载 threadedNodes 方法
+     */
+    public void threadedNodes() {
+        threadedNodes(root);
+    }
+
+    /**
+     * 对二叉树进行中序线索化
+     *
+     * @param node 当前需要线索化的结点
+     */
+    public void threadedNodes(HeroNode node) {
+        // 如果 node == null，不能线索化
+        if (node == null)
+            return;
+        // 1. 线索化左子树
+        threadedNodes(node.left);
+        // 2. 线索化当前结点
+        // 处理当前结点的前驱结点
+        if (node.left == null) {
+            // 让当前结点的左指针指向前驱结点
+            node.left = pre;
+            // 修改当前结点的左指针的类型，代表指向前驱结点
+            node.leftType = 1;
+        }
+        // 处理后继结点
+        if (pre != null && pre.right == null) {
+            // 让前驱结点的右指针指向当前结点
+            pre.right = node;
+            // 修改前驱结点的右指针类型
+            pre.rightType = 1;
+        }
+        // !! 每处理一个结点后，让当前结点是下一个结点的前驱结点
+        pre = node;
+        // 3. 线索化右子树
+        threadedNodes(node.right);
+    }
+
+    /**
+     * 中序遍历线索化二叉树
+     */
+    public void threadedList() {
+        // 定义一个变量，存储当前遍历的结点，从 root 开始
+        HeroNode node = root;
+        while (node != null) {
+            // 循环的找到 leftType == 1 的结点，第一个找到的就是 8 结点
+            // 后面随着遍历而变化，因为当 leftType == 1 时，说明该结点是按照线索化处理后的有效结点
+            while (node.leftType == 0) {
+                node = node.left;
+            }
+            // 打印当前这个结点
+            System.out.println(node);
+            // 如果当前结点的右指针指向的是后继结点，就一直输出
+            while (node.rightType == 1) {
+                node = node.right;
+                System.out.println(node);
+            }
+            // 替换遍历的结点
+            node = node.right;
+        }
+    }
+
+    /**
+     * 重载 preThreadedNodes 方法
+     */
+    public void preThreadedNodes() {
+        preThreadedNodes(root);
+    }
+
+    /**
+     * 前序线索化二叉树
+     *
+     * @param node 当前需要线索化的结点
+     */
+    public void preThreadedNodes(HeroNode node) {
+        if (node == null)
+            return;
+        if (node.left == null) {
+            node.left = pre;
+            node.leftType = 1;
+        }
+        if (pre != null && pre.right == null) {
+            pre.right = node;
+            pre.rightType = 1;
+        }
+        pre = node;
+        if (node.leftType != 1)
+            preThreadedNodes(node.left);
+        if (node.rightType != 1)
+            preThreadedNodes(node.right);
+    }
+
+    /**
+     * 前序遍历线索化二叉树
+     */
+    public void preThreadList() {
+        HeroNode node = root;
+        while (node != null) {
+            System.out.println(node);
+            while (node.leftType == 0) {
+                node = node.left;
+                System.out.println(node);
+            }
+            while (node.rightType == 1) {
+                node = node.right;
+                System.out.println(node);
+            }
+            node = node.right;
+        }
+    }
+
+    /**
+     * 重载 postThreadedNodes 方法
+     */
+    public void postThreadedNodes() {
+        postThreadedNodes(root);
+    }
+
+    /**
+     * 后序线索化二叉树
+     *
+     * @param node 当前需要线索化的结点
+     */
+    public void postThreadedNodes(HeroNode node) {
+        if (node == null)
+            return;
+        if (node.leftType != 1)
+            postThreadedNodes(node.left);
+        if (node.rightType != 1)
+            postThreadedNodes(node.right);
+        if (pre != null && node.left == null) {
+            node.left = pre;
+            node.leftType = 1;
+        }
+        if (pre != null && pre.right == null) {
+            pre.right = node;
+            pre.rightType = 1;
+        }
+        pre = node;
+    }
+
+    /**
+     * 后序遍历线索化二叉树
+     */
+    public void postThreadList() {
+        HeroNode node = root;
+        int count = 0;
+        Stack<HeroNode> stack = new Stack<>();
+        while (node != null) {
+            stack.push(node);
+            while (node.rightType == 0) {
+                node = node.right;
+                stack.push(node);
+            }
+            if (node.leftType == 0 && node.rightType == 1 && count++ == 0) {
+                node = node.left;
+                stack.push(node);
+            }
+            while (node.leftType == 1) {
+                node = node.left;
+                stack.push(node);
+            }
+            if (node.left == null)
+                break;
+            node = node.right;
+        }
+        while (stack.size() != 0)
+            System.out.println(stack.pop());
+    }
 
     /**
      * 前序遍历
@@ -114,6 +296,15 @@ class HeroNode {
      * 右子结点，默认 null
      */
     public HeroNode right;
+
+    /**
+     * 如果 leftType == 0 ，表示指向的是左子树；如果 leftType ==1，表示指向前驱结点
+     */
+    public int leftType;
+    /**
+     * 如果 rightType == 0 ，表示指向的是右子树；如果 rightType ==1，表示指向后继结点
+     */
+    public int rightType;
 
     public HeroNode(int no, String name) {
         this.no = no;
@@ -302,24 +493,4 @@ class HeroNode {
                 '}';
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
